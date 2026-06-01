@@ -10,7 +10,7 @@ namespace
 	const DIR PLAYER_INIT_DIR = { DOWN }; //プレイヤーの初期方向
 	const int animFrame[4]{ 0, 1, 2, 1 }; //アニメーションのコマ番号
 	const float ANIM_INTERVAL = 0.2f; //アニメーションの1コマのインターバル
-
+	
 }
 
 
@@ -19,6 +19,7 @@ Player::Player()
 {
 	hImage_ = LoadGraph("Assets/mogu.png");
 	dir_ = PLAYER_INIT_DIR;
+
 }
 
 Player::~Player()

@@ -11,7 +11,7 @@ public:
 	void Draw() override;
 	int GetMapData(int x, int y);
 	void SetMapData(int x, int y,int value) {
-		mapData[y][x] = value;
+		//mapData[y][x] = value;
 	}
 };
 
