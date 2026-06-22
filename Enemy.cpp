@@ -12,12 +12,15 @@ namespace
 	const float ANIM_INTERVAL = 0.2f;
 	const int PLAYER_DISCOVER_DIS = 4;
 	Stage* stage = nullptr;
+	const int ATTACK_DIS = 2;
+	const int Dir[2] = { 1,-1 };
 }
 
 
 Enemy::Enemy()
 	: GameObject() 
 {
+	st = Patrol;
 	hImage_ = LoadGraph("Assets/panda_R.png");
 	pos_ = ENEMY_START_POS; //32はブロックの位置pos_
 	dir_ = INIT_ENEMY_DIR;
@@ -32,29 +35,49 @@ void Enemy::Update()
 {
 	Player* pl = FindGameObject<Player>();
 	
-
 	Point ppos = pl->GetPlayerPos();
-
+	float font = GetFontSize();
+	int disX = (ppos.x - pos_.x) / CHA_SIZE;
+	int disY = (ppos.y - pos_.y) / CHA_SIZE;
+	bool PisDiscover = false;
+	bool CisDiscover = false;
+	bool SisDiscover = false;
 	static float prog_timer = 0.5f;
 	prog_timer -= Time::DeltaTime();
-
+	Point newPos = pos_;
 	if (prog_timer >= 0.0f)
 	{
 		return;
 	}
+	switch (st) {
+	case Patrol:
+		// 通常移動
+		PisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
+		switch (dir_)
+		{
+		case UP:
+			newPos.y -= ENEMY_DRAW_SIZE;
+			break;
 
-	int disX = (ppos.x - pos_.x) / CHA_SIZE;
-	int disY = (ppos.y - pos_.y) / CHA_SIZE;
+		case DOWN:
+			newPos.y += ENEMY_DRAW_SIZE;
+			break;
 
-	bool isDiscover =
-		abs(disX) < PLAYER_DISCOVER_DIS &&
-		abs(disY) < PLAYER_DISCOVER_DIS;
+		case LEFT:
+			newPos.x -= ENEMY_DRAW_SIZE;
+			break;
+		case RIGHT:
+			newPos.x += ENEMY_DRAW_SIZE;
+			break;
+		}
+		if (PisDiscover)
+		{
+			st = Chase;
+		}
+		break;
 
-	Point newPos = pos_;
-
-	if (isDiscover)
-	{
-		// プレイヤー追跡
+	case Chase:
+		CisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
 		if (abs(disX) > abs(disY))
 		{
 			if (disX > 0)
@@ -81,30 +104,37 @@ void Enemy::Update()
 				dir_ = UP;
 			}
 		}
-	}
-	else
-	{
-		// 通常移動
-		switch (dir_)
-		{
-		case UP:
-			newPos.y -= ENEMY_DRAW_SIZE;
-			break;
-
-		case DOWN:
-			newPos.y += ENEMY_DRAW_SIZE;
-			break;
-
-		case LEFT:
-			newPos.x -= ENEMY_DRAW_SIZE;
-			break;
-
-		case RIGHT:
-			newPos.x += ENEMY_DRAW_SIZE;
-			break;
+		if (!CisDiscover) {
+			st = Patrol;
 		}
+		if (abs(disX) < ATTACK_DIS && abs(disY) < ATTACK_DIS) {
+			st = Attack;
+		}
+		break;
+	case Attack:
+	
+		SetFontSize(font*3);
+		DrawString(0,798, "攻撃中", GetColor(255, 0, 0));
+		if (disX > ATTACK_DIS || disY > ATTACK_DIS) {
+			st = Search;
+		}
+		SetFontSize(font);
+		break;
+	case Search:
+		for (int i = 0;i < 4;i++) {
+			int disX = (ppos.x - pos_.x) / CHA_SIZE;
+			int disY = (ppos.y - pos_.y) / CHA_SIZE;
+			SisDiscover = abs(disX+Dir[i%2]) < PLAYER_DISCOVER_DIS && abs(disY+Dir[i%2]) < PLAYER_DISCOVER_DIS;
+			if (SisDiscover) {
+				st = Attack;
+				break;
+			}
+		}
+		if (!SisDiscover) {
+			st = Patrol;
+		}
+		break;
 	}
-
 	// 壁じゃなければ移動
 	if (stage->GetMapData(newPos.x / ENEMY_DRAW_SIZE, newPos.y / ENEMY_DRAW_SIZE) != 1)
 	{
@@ -128,7 +158,6 @@ void Enemy::Update()
 			break;
 		}
 	}
-
 	prog_timer += 0.5f;
 }
 void Enemy::Draw()
@@ -136,37 +165,55 @@ void Enemy::Draw()
 	static float animTimer = ANIM_INTERVAL;
 	static int frame = 0;
 	int nowFrame = animFrame[frame];
-	Point flontVec;//向きベクトル
-	Point pflontVec;
-	pflontVec.x = pos_.x * cos(60) - pos_.y * sin(60);
-	pflontVec.y = pos_.x * sin(60) + pos_.y * cos(60);
-	Point mflontVec;
-	mflontVec.x = pos_.x * cos(-60) - pos_.y * sin(-60);
-	mflontVec.y = pos_.x * sin(-60) + pos_.y * cos(-60);
+	Point frontVec;//向きベクトル
 	switch (dir_) {
 		case UP:
-		flontVec = { 0, -1 };
+		frontVec = { 0, -1 };
 		break;
 		case DOWN:
-		flontVec = { 0, 1 };
+		frontVec = { 0, 1 };
 		break;
 		case LEFT:
-		flontVec = { -1, 0 };
+		frontVec = { -1, 0 };
 		break;
 		case RIGHT:
-		flontVec = { 1,0 };
+		frontVec = { 1,0 };
 		break;
 	}
-	
+	float angle = DX_PI_F / 3.0f;
+	float lx =frontVec.x * cosf(angle)- frontVec.y * sinf(angle);
+
+	float ly =frontVec.x * sinf(angle)+ frontVec.y * cosf(angle);
+
+	float rx= frontVec.x * cosf(-angle)- frontVec.y * sinf(-angle);
+
+	float ry=frontVec.x* cosf(-angle)- frontVec.y * sinf(-angle);
+	int range = PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
+	int leftX = pos_.x + lx * range;
+	int leftY = pos_.y + ly * range;
+
+	int rightX = pos_.x + rx * range;
+	int rightY = pos_.y + ry * range;
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+
+	DrawTriangle(
+		pos_.x,
+		pos_.y,
+		leftX,
+		leftY,
+		rightX,
+		rightY,
+		GetColor(255, 0, 0),
+		TRUE
+	);
+
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	Rect iRect[4] = {
 		{  nowFrame * ENEMY_SIZE, 3 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
 		{  nowFrame * ENEMY_SIZE, 0 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
 		{  nowFrame * ENEMY_SIZE, 1 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
 		{  nowFrame * ENEMY_SIZE, 2 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE}
 	};
-	
-	
-	DrawCircle(pos_.x, pos_.y, PLAYER_DISCOVER_DIS*ENEMY_DRAW_SIZE, GetColor(255, 0, 0), TRUE);
 	
 	DrawBox(pos_.x, pos_.y, pos_.x + ENEMY_DRAW_SIZE, pos_.y + ENEMY_DRAW_SIZE,
 		GetColor(255, 255, 0), FALSE, 2);
