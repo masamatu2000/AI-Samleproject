@@ -136,7 +136,28 @@ void Enemy::Draw()
 	static float animTimer = ANIM_INTERVAL;
 	static int frame = 0;
 	int nowFrame = animFrame[frame];
-
+	Point flontVec;//向きベクトル
+	Point pflontVec;
+	pflontVec.x = pos_.x * cos(60) - pos_.y * sin(60);
+	pflontVec.y = pos_.x * sin(60) + pos_.y * cos(60);
+	Point mflontVec;
+	mflontVec.x = pos_.x * cos(-60) - pos_.y * sin(-60);
+	mflontVec.y = pos_.x * sin(-60) + pos_.y * cos(-60);
+	switch (dir_) {
+		case UP:
+		flontVec = { 0, -1 };
+		break;
+		case DOWN:
+		flontVec = { 0, 1 };
+		break;
+		case LEFT:
+		flontVec = { -1, 0 };
+		break;
+		case RIGHT:
+		flontVec = { 1,0 };
+		break;
+	}
+	
 	Rect iRect[4] = {
 		{  nowFrame * ENEMY_SIZE, 3 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
 		{  nowFrame * ENEMY_SIZE, 0 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
@@ -156,4 +177,15 @@ void Enemy::Draw()
 		animTimer = ANIM_INTERVAL + animTimer;
 	}
 	animTimer = animTimer - Time::DeltaTime();
+	int topX= pos_.x-PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
+	int topY = pos_.y-PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
+	int bottomX = pos_.x+PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
+	int bottomY = pos_.y+PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
+	// 透明度を50%（128/255）に設定
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+	// 赤色の半透明矩形を描画（引数: 左上X, 左上Y, 右下X, 右下Y, 色, 塗りつぶし）
+	DrawBox(topX, topY, bottomX + ENEMY_DRAW_SIZE, bottomY + ENEMY_DRAW_SIZE, GetColor(255, 0, 0), TRUE);
+	// 描画が終わったら通常のブレンドモードに戻す
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		
 }

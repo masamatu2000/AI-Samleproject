@@ -15,5 +15,6 @@ private:
 	int hImage_;//‰æ‘œID
 	Point pos_;
 	DIR dir_;//ˆÚ“®•ûŒü
+	Point moveVec_;//Œü‚«ƒxƒNƒgƒ‹
 };
 
