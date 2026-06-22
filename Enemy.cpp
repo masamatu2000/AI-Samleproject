@@ -143,20 +143,8 @@ void Enemy::Draw()
 		{  nowFrame * ENEMY_SIZE, 1 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
 		{  nowFrame * ENEMY_SIZE, 2 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE}
 	};
-	switch (dir_) {
-	case UP:
-		for (int i = 1;i < 5;i++) {
-			int y = pos_.y;
-			stage->SetMapData()
-		}
-	}
-	for (int i = 60;i > -1;i--) {
-		int x = (pos_.x + PLAYER_DISCOVER_DIS * cos(i)) / ENEMY_DRAW_SIZE;
-		for (int j = 60;j > -1;j--) {
-			int y = (pos_.y + PLAYER_DISCOVER_DIS * sin(j)) / ENEMY_DRAW_SIZE;
-			stage->SetMapData(x,y, 2);//ステージで視界を塗ってもらう
-		}
-	}
+	
+	
 	DrawCircle(pos_.x, pos_.y, PLAYER_DISCOVER_DIS*ENEMY_DRAW_SIZE, GetColor(255, 0, 0), TRUE);
 	
 	DrawBox(pos_.x, pos_.y, pos_.x + ENEMY_DRAW_SIZE, pos_.y + ENEMY_DRAW_SIZE,
