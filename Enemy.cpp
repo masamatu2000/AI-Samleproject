@@ -20,28 +20,31 @@ namespace
 Enemy::Enemy()
 	: GameObject() 
 {
-	st = Patrol;
+	//st = Patrol;
 	hImage_ = LoadGraph("Assets/panda_R.png");
 	pos_ = ENEMY_START_POS; //32はブロックの位置pos_
 	dir_ = INIT_ENEMY_DIR;
 	stage=FindGameObject<Stage>();
+	currentState_ = Patrol;
+	state_ = new EnemyPatrolState();
 }
 
 Enemy::~Enemy()
 {
+	//delete currentState_;
 }
 
 void Enemy::Update()
 {
 	Player* pl = FindGameObject<Player>();
 	
-	Point ppos = pl->GetPlayerPos();
+	/*Point ppos = pl->GetPlayerPos();
 	float font = GetFontSize();
 	int disX = (ppos.x - pos_.x) / CHA_SIZE;
 	int disY = (ppos.y - pos_.y) / CHA_SIZE;
 	bool PisDiscover = false;
 	bool CisDiscover = false;
-	bool SisDiscover = false;
+	bool SisDiscover = false;*/
 	static float prog_timer = 0.5f;
 	prog_timer -= Time::DeltaTime();
 	Point newPos = pos_;
@@ -49,112 +52,135 @@ void Enemy::Update()
 	{
 		return;
 	}
-	switch (st) {
-	case Patrol:
-		// 通常移動
-		PisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
-		switch (dir_)
-		{
-		case UP:
-			newPos.y -= ENEMY_DRAW_SIZE;
-			break;
+	state_->Update(this);
+	//switch (st) {
+	//case Patrol:
+	//	// 通常移動
+	//	PisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
+	//	switch (dir_)
+	//	{
+	//	case UP:
+	//		newPos.y -= ENEMY_DRAW_SIZE;
+	//		break;
 
-		case DOWN:
-			newPos.y += ENEMY_DRAW_SIZE;
-			break;
+	//	case DOWN:
+	//		newPos.y += ENEMY_DRAW_SIZE;
+	//		break;
 
-		case LEFT:
-			newPos.x -= ENEMY_DRAW_SIZE;
-			break;
-		case RIGHT:
-			newPos.x += ENEMY_DRAW_SIZE;
-			break;
-		}
-		if (PisDiscover)
-		{
-			st = Chase;
-		}
-		break;
+	//	case LEFT:
+	//		newPos.x -= ENEMY_DRAW_SIZE;
+	//		break;
+	//	case RIGHT:
+	//		newPos.x += ENEMY_DRAW_SIZE;
+	//		break;
+	//	}
+	//	if (PisDiscover)
+	//	{
+	//		st = Chase;
+	//	}
 
-	case Chase:
-		CisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
-		if (abs(disX) > abs(disY))
-		{
-			if (disX > 0)
-			{
-				newPos.x += ENEMY_DRAW_SIZE;
-				dir_ = RIGHT;
-			}
-			else if (disX < 0)
-			{
-				newPos.x -= ENEMY_DRAW_SIZE;
-				dir_ = LEFT;
-			}
-		}
-		else
-		{
-			if (disY > 0)
-			{
-				newPos.y += ENEMY_DRAW_SIZE;
-				dir_ = DOWN;
-			}
-			else if (disY < 0)
-			{
-				newPos.y -= ENEMY_DRAW_SIZE;
-				dir_ = UP;
-			}
-		}
-		if (!CisDiscover) {
-			st = Patrol;
-		}
-		if (abs(disX) < ATTACK_DIS && abs(disY) < ATTACK_DIS) {
-			st = Attack;
-		}
-		break;
-	case Attack:
-	
-		SetFontSize(font*3);
-		DrawString(0,798, "攻撃中", GetColor(255, 0, 0));
-		if (disX > ATTACK_DIS || disY > ATTACK_DIS) {
-			st = Search;
-		}
-		SetFontSize(font);
-		break;
-	case Search:
-		for (int i = 0;i < 4;i++) {
-			int disX = (ppos.x - pos_.x) / CHA_SIZE;
-			int disY = (ppos.y - pos_.y) / CHA_SIZE;
-			SisDiscover = abs(disX+Dir[i%2]) < PLAYER_DISCOVER_DIS && abs(disY+Dir[i%2]) < PLAYER_DISCOVER_DIS;
-			if (SisDiscover) {
-				st = Attack;
-				break;
-			}
-		}
-		if (!SisDiscover) {
-			st = Patrol;
-		}
-		break;
-	}
-	// 壁じゃなければ移動
-	if (stage->GetMapData(newPos.x / ENEMY_DRAW_SIZE, newPos.y / ENEMY_DRAW_SIZE) != 1)
-	{
-		pos_ = newPos;
-	}
-	else
-	{
-		// 壁だったら方向転換
-		switch (dir_) {
-		case UP:
-			dir_ = LEFT;
+	//	break;
+
+	//case Chase:
+	//	CisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
+	//	if (abs(disX) > abs(disY))
+	//	{
+	//		if (disX > 0)
+	//		{
+	//			newPos.x += ENEMY_DRAW_SIZE;
+	//			dir_ = RIGHT;
+	//		}
+	//		else if (disX < 0)
+	//		{
+	//			newPos.x -= ENEMY_DRAW_SIZE;
+	//			dir_ = LEFT;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		if (disY > 0)
+	//		{
+	//			newPos.y += ENEMY_DRAW_SIZE;
+	//			dir_ = DOWN;
+	//		}
+	//		else if (disY < 0)
+	//		{
+	//			newPos.y -= ENEMY_DRAW_SIZE;
+	//			dir_ = UP;
+	//		}
+	//	}
+	//	if (!CisDiscover) {
+	//		st = Patrol;
+	//	}
+	//	if (abs(disX) < ATTACK_DIS && abs(disY) < ATTACK_DIS) {
+	//		st = Attack;
+	//	}
+	//	break;
+	//case Attack:
+	//
+	//	SetFontSize(font*3);
+	//	DrawString(0,798, "攻撃中", GetColor(255, 0, 0));
+	//	if (disX > ATTACK_DIS || disY > ATTACK_DIS) {
+	//		st = Search;
+	//	}
+	//	SetFontSize(font);
+	//	break;
+	//case Search:
+	//	for (int i = 0;i < 4;i++) {
+	//		int disX = (ppos.x - pos_.x) / CHA_SIZE;
+	//		int disY = (ppos.y - pos_.y) / CHA_SIZE;
+	//		SisDiscover = abs(disX+Dir[i%2]) < PLAYER_DISCOVER_DIS && abs(disY+Dir[i%2]) < PLAYER_DISCOVER_DIS;
+	//		if (SisDiscover) {
+	//			st = Attack;
+	//			break;
+	//		}
+	//	}
+	//	if (!SisDiscover) {
+	//		st = Patrol;
+	//	}
+	//	break;
+	//}
+	//// 壁じゃなければ移動
+	//if (stage->GetMapData(newPos.x / ENEMY_DRAW_SIZE, newPos.y / ENEMY_DRAW_SIZE) != 1)
+	//{
+	//	pos_ = newPos;
+	//}
+	//else
+	//{
+	//	// 壁だったら方向転換
+	//	switch (dir_) {
+	//	case UP:
+	//		dir_ = LEFT;
+	//		break;
+	//	case DOWN:
+	//		dir_ = RIGHT;
+	//		break;
+	//	case RIGHT:
+	//		dir_ = UP;
+	//		break;
+	//case LEFT:
+	//		dir_ = DOWN;
+	//		break;
+	//	}
+	//}
+	if (ChangeStateFlag_) {
+		ChangeStateFlag_ = false;
+		switch (currentState_) {
+		case Patrol:
+			delete state_;
+			state_ = new EnemyPatrolState();
 			break;
-		case DOWN:
-			dir_ = RIGHT;
+		case Chase:
+			delete state_;
+			state_ = new EnemyChaseState();
 			break;
-		case RIGHT:
-			dir_ = UP;
+		case Attack:
+			delete state_;
+			state_ = new EnemyAttackState();
 			break;
-		case LEFT:
-			dir_ = DOWN;
+		case Search:
+			delete state_;
+			state_ = new EnemySearchState();
 			break;
 		}
 	}
@@ -237,4 +263,181 @@ void Enemy::Draw()
 	//// 描画が終わったら通常のブレンドモードに戻す
 	//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 		
+}
+void Enemy::ChangeState(State newState)
+{
+	currentState_ = newState;
+	ChangeStateFlag_ = true;
+}
+/// <summary>
+/// 巡回状態の更新
+/// </summary>
+/// <param name="enemy"></param>
+void EnemyPatrolState::Update(Enemy* enemy)
+{
+	Player* pl = FindGameObject<Player>();
+	Point ppos = pl->GetPlayerPos();
+	float font = GetFontSize();
+	int disX = (ppos.x - enemy->GetPos().x) / CHA_SIZE;
+	int disY = (ppos.y - enemy->GetPos().y) / CHA_SIZE;
+	bool PisDiscover = false;
+	DIR dir_=enemy->GetDir();
+	Point newPos = enemy->GetPos();
+	// 通常移動
+	PisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
+	if (PisDiscover)
+	{
+		enemy->ChangeState(Chase);
+		return;
+	}
+	switch (dir_)
+	{
+	case UP:
+		newPos.y -= ENEMY_DRAW_SIZE;
+		break;
+
+	case DOWN:
+		newPos.y += ENEMY_DRAW_SIZE;
+		break;
+
+	case LEFT:
+		newPos.x -= ENEMY_DRAW_SIZE;
+		break;
+	case RIGHT:
+		newPos.x += ENEMY_DRAW_SIZE;
+		break;
+	}
+	// 壁じゃなければ移動
+	if (stage->GetMapData(newPos.x / ENEMY_DRAW_SIZE, newPos.y / ENEMY_DRAW_SIZE) != 1)
+	{
+		enemy->SetPos(newPos);
+	}
+	else
+	{
+		// 壁だったら方向転換
+		switch (dir_) {
+		case UP:
+			enemy->SetDir(LEFT);
+			break;
+		case DOWN:
+			enemy->SetDir(RIGHT);
+			break;
+		case RIGHT:
+			enemy->SetDir(UP);
+			break;
+		case LEFT:
+			enemy->SetDir(DOWN);
+			break;
+		}
+	}
+	
+}
+/// <summary>
+/// 追跡状態の更新
+/// </summary>
+/// <param name="enemy"></param>
+void EnemyChaseState::Update(Enemy* enemy)
+{
+	bool CisDiscover = false;
+	Player* pl = FindGameObject<Player>();
+	Point ppos = pl->GetPlayerPos();
+	int disX = (ppos.x - enemy->GetPos().x) / CHA_SIZE;
+	int disY = (ppos.y - enemy->GetPos().y) / CHA_SIZE;
+	CisDiscover = abs(disX) < PLAYER_DISCOVER_DIS && abs(disY) < PLAYER_DISCOVER_DIS;
+	Point newPos = enemy->GetPos();
+	DIR dir_ = enemy->GetDir();
+	if (abs(disX) > abs(disY))
+	{
+		if (disX > 0)
+		{
+			newPos.x += ENEMY_DRAW_SIZE;
+			enemy->SetDir(RIGHT);
+		}
+		else if (disX < 0)
+		{
+			newPos.x -= ENEMY_DRAW_SIZE;
+			enemy->SetDir(LEFT);
+		}
+	}
+	else
+	{
+		if (disY > 0)
+		{
+			newPos.y += ENEMY_DRAW_SIZE;
+			enemy->SetDir(DOWN);
+		}
+		else if (disY < 0)
+		{
+			newPos.y -= ENEMY_DRAW_SIZE;
+			enemy->SetDir(UP);
+		}
+	}
+	if (!CisDiscover) {
+		enemy->ChangeState(Patrol);
+
+		return;
+	}
+	if (abs(disX) < ATTACK_DIS && abs(disY) < ATTACK_DIS) {
+		enemy->ChangeState(Attack);
+
+		return;
+	}
+	// 壁じゃなければ移動
+	if (stage->GetMapData(newPos.x / ENEMY_DRAW_SIZE, newPos.y / ENEMY_DRAW_SIZE) != 1)
+	{
+		enemy->SetPos(newPos);
+	}
+	else
+	{
+		// 壁だったら方向転換
+		switch (dir_) {
+		case UP:
+			enemy->SetDir(LEFT);
+			break;
+		case DOWN:
+			enemy->SetDir(RIGHT);
+			break;
+		case RIGHT:
+			enemy->SetDir(UP);
+			break;
+		case LEFT:
+			enemy->SetDir(DOWN);
+			break;
+		}
+	}
+}
+
+void EnemyAttackState::Update(Enemy* enemy)
+{
+	int disX = (FindGameObject<Player>()->GetPlayerPos().x - enemy->GetPos().x) / CHA_SIZE;
+	int disY = (FindGameObject<Player>()->GetPlayerPos().y - enemy->GetPos().y) / CHA_SIZE;
+	int font = GetFontSize();
+	SetFontSize(font * 3);
+	DrawString(0, 798, "攻撃中", GetColor(255, 0, 0));
+	if (disX > ATTACK_DIS || disY > ATTACK_DIS) {
+		enemy->ChangeState(Search);
+	}
+	SetFontSize(font);
+}
+
+void EnemySearchState::Update(Enemy* enemy)
+{
+	bool SisDiscover = false;
+	Point ppos = FindGameObject<Player>()->GetPlayerPos();
+	for (int i = 0; i < 4; i++) {
+		int disX = (ppos.x - enemy->GetPos().x) / CHA_SIZE;
+		int disY = (ppos.y - enemy->GetPos().y) / CHA_SIZE;
+		SisDiscover =
+			abs(disX + Dir[i % 2]) < PLAYER_DISCOVER_DIS &&
+			abs(disY + Dir[i % 2]) < PLAYER_DISCOVER_DIS;
+		if (SisDiscover) {
+			enemy->ChangeState(Attack);
+			return;
+		}
+	}
+	if (!SisDiscover) {
+		enemy->ChangeState(Patrol);
+
+		return;
+	}
 }

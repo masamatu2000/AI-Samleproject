@@ -6,17 +6,52 @@ enum State {
 	Attack,//攻撃（ある程度攻撃距離から逃げられたら探す）
 	Search,//探す(うろうろして見つからなかったらパトロール 再び視界に入ったらAttack)
 };
+class Enemy;
+class EnemyState
+{
+public:
+	virtual ~EnemyState() = default;
+	virtual void Update(Enemy* enemy) = 0;
+};
+class EnemyPatrolState : public EnemyState
+{
+public:
+	void Update(Enemy* enemy) override;
+};
+class EnemyChaseState : public EnemyState
+{
+public:
+	void Update(Enemy* enemy) override;
+};
+class EnemyAttackState : public EnemyState
+{
+public:
+	void Update(Enemy* enemy) override;
+};
+class EnemySearchState : public EnemyState
+{
+public:
+	void Update(Enemy* enemy) override;
+
+};
 class Enemy :
     public GameObject
 {
 	int hImage_;//画像ID
 	Point pos_;//位置
 	DIR dir_;//移動方向
+	State currentState_;//現在の状態
+	EnemyState* state_;//状態のポインタ
+	bool ChangeStateFlag_ = false;
 public:
 	Enemy();
 	~Enemy();
 	void Update() override;
 	void Draw() override;
+	Point GetPos() const { return pos_; }
+	DIR GetDir() const { return dir_; }
+	void SetDir(DIR dir) { dir_ = dir; }
+	void SetPos(Point pos) { pos_ = pos; }
 	State st;
+	void ChangeState(State newState);
 };
-
