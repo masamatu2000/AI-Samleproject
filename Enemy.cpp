@@ -187,18 +187,20 @@ void Enemy::Draw()
 
 	float rx= frontVec.x * cosf(-angle)- frontVec.y * sinf(-angle);
 
-	float ry=frontVec.x* cosf(-angle)- frontVec.y * sinf(-angle);
+	float ry=frontVec.x* cosf(-angle)+ frontVec.y * sinf(-angle);
 	int range = PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
-	int leftX = pos_.x + lx * range;
-	int leftY = pos_.y + ly * range;
+	int centerX = pos_.x + ENEMY_DRAW_SIZE / 2;
+	int centerY = pos_.y + ENEMY_DRAW_SIZE / 2;
+	int leftX = centerX + lx * range;
+	int leftY = centerY + ly * range;
 
-	int rightX = pos_.x + rx * range;
-	int rightY = pos_.y + ry * range;
+	int rightX = centerX + rx * range;
+	int rightY = centerY + ry * range;
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
 
 	DrawTriangle(
-		pos_.x,
-		pos_.y,
+		centerX,
+		centerY,
 		leftX,
 		leftY,
 		rightX,
