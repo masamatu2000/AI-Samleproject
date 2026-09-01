@@ -187,10 +187,10 @@ void Enemy::Draw()
 
 	float rx= frontVec.x * cosf(-angle)- frontVec.y * sinf(-angle);
 
-	float ry=frontVec.x* cosf(-angle)+ frontVec.y * sinf(-angle);
+	float ry=frontVec.x* sinf(-angle)+ frontVec.y * cosf(-angle);
 	int range = PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
-	int centerX = pos_.x + ENEMY_DRAW_SIZE / 2;
-	int centerY = pos_.y + ENEMY_DRAW_SIZE / 2;
+	int centerX = pos_.x + ENEMY_SIZE / 2;
+	int centerY = pos_.y + ENEMY_SIZE / 2;
 	int leftX = centerX + lx * range;
 	int leftY = centerY + ly * range;
 
@@ -230,11 +230,11 @@ void Enemy::Draw()
 	int topY = pos_.y-PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
 	int bottomX = pos_.x+PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
 	int bottomY = pos_.y+PLAYER_DISCOVER_DIS * ENEMY_DRAW_SIZE;
-	// 透明度を50%（128/255）に設定
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
-	// 赤色の半透明矩形を描画（引数: 左上X, 左上Y, 右下X, 右下Y, 色, 塗りつぶし）
-	DrawBox(topX, topY, bottomX + ENEMY_DRAW_SIZE, bottomY + ENEMY_DRAW_SIZE, GetColor(255, 0, 0), TRUE);
-	// 描画が終わったら通常のブレンドモードに戻す
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	//// 透明度を50%（128/255）に設定
+	//SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+	//// 赤色の半透明矩形を描画（引数: 左上X, 左上Y, 右下X, 右下Y, 色, 塗りつぶし）
+	//DrawBox(topX, topY, bottomX + ENEMY_DRAW_SIZE, bottomY + ENEMY_DRAW_SIZE, GetColor(255, 0, 0), TRUE);
+	//// 描画が終わったら通常のブレンドモードに戻す
+	//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 		
 }
